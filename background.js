@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function debugCode(content) {
     const prompt = `
-请帮我检查以下LeetCode代码中的潜在问题：
+请帮我检查以下LeetCode代码中的问题：
 
 题目描述：
 ${content.description}
@@ -23,7 +23,12 @@ ${content.description}
 用户代码：
 ${content.code}
 
-请指出代码中可能存在的bug和改进建议。
+指令：
+1.请指出代码中可能存在的bug和改进建议
+2.先用一句话概括最突出的问题
+
+附加要求：
+1. 使用Markdown格式输出
 `;
 
     try {
