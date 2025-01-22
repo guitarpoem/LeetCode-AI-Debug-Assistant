@@ -1,10 +1,41 @@
+// 在文件顶部添加配置
+marked.setOptions({
+    breaks: true,
+    highlight: function(code) {
+        return hljs.highlightAuto(code).value;
+    }
+});
+
 console.log('Popup script loaded');  // 检查脚本是否加载
 
 document.getElementById('debugBtn').addEventListener('click', async () => {
     console.log('Button clicked');   // 检查按钮点击事件
     const resultDiv = document.getElementById('debugResult');
-    resultDiv.textContent = "正在分析代码...";
-    console.log("正在分析代码...");
+    resultDiv.innerHTML = "<em>正在分析代码...</em>"; // 改为使用HTML
+    let buffer = ''; // 新增缓冲区
+    
+    // 修改消息监听器
+    const messageListener = (message) => {
+        if (message.type === 'streamContent') {
+            buffer += message.content;
+            // 使用防抖优化渲染性能
+            clearTimeout(this.debounce);
+            this.debounce = setTimeout(() => {
+                resultDiv.innerHTML = marked.parse(buffer);
+                // 自动滚动到底部
+                resultDiv.scrollTop = resultDiv.scrollHeight;
+            }, 200);
+        } else if (message.type === 'streamComplete') {
+            // 最终渲染一次确保完整性
+            resultDiv.innerHTML = marked.parse(buffer);
+            buffer = '';
+        }
+    };
+
+    // 先移除旧的监听器避免重复
+    chrome.runtime.onMessage.removeListener(messageListener);
+    chrome.runtime.onMessage.addListener(messageListener);
+
     try {
         // 获取当前标签页
         const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
@@ -12,23 +43,6 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
         // 从页面获取内容
         const content = await chrome.tabs.sendMessage(tab.id, {action: "getContent"});
         console.log(content);
-
-        // 监听流式内容
-        chrome.runtime.onMessage.addListener((message) => {
-            console.log('收到消息:', message);  // 检查是否收到消息
-            
-            if (message.type === 'streamContent') {
-                console.log('收到流式内容:', message.content);  // 检查内容
-                // 追加新内容
-                if (resultDiv.textContent === "正在分析代码...") {
-                    resultDiv.textContent = message.content;
-                } else {
-                    resultDiv.textContent += message.content;
-                }
-            } else if (message.type === 'streamComplete') {
-                console.log('流完成');
-            }
-        });
 
         // 发送到background script处理
         await chrome.runtime.sendMessage({
