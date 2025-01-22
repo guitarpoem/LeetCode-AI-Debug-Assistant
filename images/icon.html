@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Icons</title>
+</head>
+<body>
+    <svg id="icon" width="128" height="128" viewBox="0 0 128 128">
+        <rect width="128" height="128" fill="#3498db"/>
+        <text x="64" y="64" text-anchor="middle" dominant-baseline="middle" 
+              fill="white" font-family="Arial" font-weight="bold" font-size="80">L</text>
+        <path d="M90 90 L38 90 L38 38" stroke="white" stroke-width="8" fill="none"/>
+    </svg>
+
+    <canvas id="canvas16" width="16" height="16"></canvas>
+    <canvas id="canvas48" width="48" height="48"></canvas>
+    <canvas id="canvas128" width="128" height="128"></canvas>
+
+    <script>
+        function downloadIcon(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        const svg = document.getElementById('icon');
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const img = new Image();
+        
+        img.onload = function() {
+            [16, 48, 128].forEach(size => {
+                const canvas = document.getElementById(`canvas${size}`);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, size, size);
+                downloadIcon(canvas, `icon${size}.png`);
+            });
+        };
+
+        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    </script>
+</body>
+</html> 
