@@ -66,10 +66,6 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
     resultDiv.innerHTML = "<em>正在分析代码...</em>"; // 改为使用HTML
     let buffer = ''; // 新增缓冲区
     
-    // 获取当前URL用于缓存
-    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
-    const url = tab.url;
-    
     // 消息监听器
     const messageListener = (message) => {
         if (message.type === 'streamContent') {
@@ -87,8 +83,6 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
-            // 保存到缓存
-            saveCache(url, buffer);
             buffer = '';
         }
     };
@@ -115,3 +109,10 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
         resultDiv.textContent = "错误: " + error.message;
     }
 });
+// 确保在 DOMContentLoaded 事件后注册监听器
+document.addEventListener('DOMContentLoaded', () => {
+    chrome.runtime.onMessage.addListener((message) => {
+        console.log('DOMContentLoaded收到消息:', message);
+        // ... 其他代码 ...
+    });
+}); 

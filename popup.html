@@ -79,9 +79,14 @@
       border-radius: 6px;
     }
     
+    /* 只对有语言标识的代码块添加顶部内边距 */
+    pre:has(code.hljs) {
+      padding-top: 24px;  /* 只在有语言标识的代码块添加顶部内边距 */
+    }
+    
     pre code.hljs {
-      padding-top: 2.5em;  /* 为语言标签留出空间 */
-      background: transparent;  /* 移除 hljs 默认背景 */
+      padding-top: 0;
+      background: transparent;
     }
     
     pre code.hljs::before {
