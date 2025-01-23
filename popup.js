@@ -24,11 +24,51 @@ marked.setOptions({
 
 console.log('Popup script loaded');  // 检查脚本是否加载
 
+// 在文件顶部添加缓存相关函数
+async function saveCache(url, content) {
+    await chrome.storage.local.set({
+        [`debug_cache_${url}`]: {
+            content: content,
+            timestamp: Date.now()
+        }
+    });
+}
+
+async function loadCache(url) {
+    const data = await chrome.storage.local.get(`debug_cache_${url}`);
+    return data[`debug_cache_${url}`];
+}
+
+// 修改 DOMContentLoaded 事件处理
+document.addEventListener('DOMContentLoaded', async () => {
+    // 获取当前标签页URL
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    const url = tab.url;
+    
+    // 检查缓存
+    const cache = await loadCache(url);
+    if (cache) {
+        const resultDiv = document.getElementById('debugResult');
+        resultDiv.innerHTML = marked.parse(cache.content);
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    }
+
+    chrome.runtime.onMessage.addListener((message) => {
+        console.log('DOMContentLoaded收到消息:', message);
+    });
+});
+
 document.getElementById('debugBtn').addEventListener('click', async () => {
     console.log('Button clicked');   // 检查按钮点击事件
     const resultDiv = document.getElementById('debugResult');
     resultDiv.innerHTML = "<em>正在分析代码...</em>"; // 改为使用HTML
     let buffer = ''; // 新增缓冲区
+    
+    // 获取当前URL用于缓存
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    const url = tab.url;
     
     // 消息监听器
     const messageListener = (message) => {
@@ -47,6 +87,8 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
+            // 保存到缓存
+            saveCache(url, buffer);
             buffer = '';
         }
     };
@@ -73,11 +115,3 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
         resultDiv.textContent = "错误: " + error.message;
     }
 });
-
-// 确保在 DOMContentLoaded 事件后注册监听器
-document.addEventListener('DOMContentLoaded', () => {
-    chrome.runtime.onMessage.addListener((message) => {
-        console.log('DOMContentLoaded收到消息:', message);
-        // ... 其他代码 ...
-    });
-}); 
