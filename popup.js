@@ -1,7 +1,15 @@
-// 在文件顶部添加配置
+// 在文件顶部修改配置
 marked.setOptions({
     breaks: true,
-    highlight: function(code) {
+    highlight: function(code, language) {
+        if (language) {
+            try {
+                return hljs.highlight(code, {language: language}).value;
+            } catch (err) {
+                console.log('Language highlight error:', err);
+                return hljs.highlightAuto(code).value;
+            }
+        }
         return hljs.highlightAuto(code).value;
     }
 });

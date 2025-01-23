@@ -3,8 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <script src="libs/marked.min.js"></script>
-  <link rel="stylesheet" href="libs/highlight.styles.min.css">
-  <script src="libs/highlight.min.js"></script>
+  <!-- 使用本地highlight.js文件和样式 -->
+  <link rel="stylesheet" href="libs/highlight.js/styles/default.min.css">
+  <script src="libs/highlight.js/highlight.min.js"></script>
+  
+  <!-- 添加常用编程语言支持 -->
+  <script src="libs/highlight.js/languages/cpp.min.js"></script>
+  <script src="libs/highlight.js/languages/java.min.js"></script>
+  <script src="libs/highlight.js/languages/python.min.js"></script>
+  <script src="libs/highlight.js/languages/javascript.min.js"></script>
+  <script src="libs/highlight.js/languages/typescript.min.js"></script>
+  <script src="libs/highlight.js/languages/go.min.js"></script>
+  <script src="libs/highlight.js/languages/rust.min.js"></script>
+  <script src="libs/highlight.js/languages/sql.min.js"></script>
+  
   <style>
     body {
       width: 300px;

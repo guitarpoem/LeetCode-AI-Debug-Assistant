@@ -71,8 +71,8 @@ ${content.code}
             buffer += decoder.decode(value, {stream: true});
             
             // 解析SSE数据
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
+            const lines = buffer.split('\n'); // 将buffer按换行符分割
+            buffer = lines.pop() || ''; 
             
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
