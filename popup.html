@@ -70,6 +70,38 @@
       overflow: hidden;         /* 移除滚动条 */
       max-width: 100%;         /* 限制最大宽度 */
     }
+    
+    /* 修改代码块语言标识样式 */
+    pre {
+      position: relative;
+      margin: 1em 0;
+      background: #f8f8f8;
+      border-radius: 6px;
+    }
+    
+    pre code.hljs {
+      padding-top: 2.5em;  /* 为语言标签留出空间 */
+      background: transparent;  /* 移除 hljs 默认背景 */
+    }
+    
+    pre code.hljs::before {
+      content: attr(class);
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: #666;
+      background: #e0e0e0;
+      border-radius: 0 6px 0 6px;
+      text-transform: uppercase;
+    }
+
+    /* 确保 hljs 样式正确应用 */
+    .hljs {
+      background: transparent !important;
+      padding: 0 !important;
+    }
     /* 添加markdown内容样式 */
     #debugResult p {
       margin: 10px 0;

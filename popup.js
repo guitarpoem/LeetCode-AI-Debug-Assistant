@@ -2,16 +2,24 @@
 marked.setOptions({
     breaks: true,
     highlight: function(code, language) {
+        // 如果指定了语言
         if (language) {
             try {
-                return hljs.highlight(code, {language: language}).value;
+                // 尝试使用指定的语言进行高亮
+                return hljs.highlight(code, {
+                    language: language.toLowerCase(),
+                    ignoreIllegals: true
+                }).value;
             } catch (err) {
-                console.log('Language highlight error:', err);
+                console.log(`Language highlight error for ${language}:`, err);
+                // 如果指定语言失败，回退到自动检测
                 return hljs.highlightAuto(code).value;
             }
         }
+        // 没有指定语言时自动检测
         return hljs.highlightAuto(code).value;
-    }
+    },
+    langPrefix: 'hljs language-' // 添加 hljs 类以应用样式
 });
 
 console.log('Popup script loaded');  // 检查脚本是否加载
@@ -26,13 +34,19 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
     const messageListener = (message) => {
         if (message.type === 'streamContent') {
             buffer += message.content;
-            // 直接渲染
+            // 渲染并应用高亮
             resultDiv.innerHTML = marked.parse(buffer);
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
             // 自动滚动到底部
             resultDiv.scrollTop = resultDiv.scrollHeight;
         } else if (message.type === 'streamComplete') {
             // 最终渲染一次确保完整性
             resultDiv.innerHTML = marked.parse(buffer);
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
             buffer = '';
         }
     };
