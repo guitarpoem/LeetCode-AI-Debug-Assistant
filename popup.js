@@ -14,17 +14,14 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
     resultDiv.innerHTML = "<em>正在分析代码...</em>"; // 改为使用HTML
     let buffer = ''; // 新增缓冲区
     
-    // 修改消息监听器
+    // 消息监听器
     const messageListener = (message) => {
         if (message.type === 'streamContent') {
             buffer += message.content;
-            // 使用防抖优化渲染性能
-            clearTimeout(this.debounce);
-            this.debounce = setTimeout(() => {
-                resultDiv.innerHTML = marked.parse(buffer);
-                // 自动滚动到底部
-                resultDiv.scrollTop = resultDiv.scrollHeight;
-            }, 200);
+            // 直接渲染
+            resultDiv.innerHTML = marked.parse(buffer);
+            // 自动滚动到底部
+            resultDiv.scrollTop = resultDiv.scrollHeight;
         } else if (message.type === 'streamComplete') {
             // 最终渲染一次确保完整性
             resultDiv.innerHTML = marked.parse(buffer);
