@@ -31,11 +31,11 @@ A Chrome extension that helps you debug LeetCode problems using AI assistance.
 - 节省重复查询时间
 
 📝 **Markdown Formatting**
-- Clean and formatted output
+- Typewriter-style like formatted output
 - Syntax highlighting for code blocks
   
 **Markdown格式化**
-- 清晰的格式化输出
+- 打字机式格式化输出
 - 代码块语法高亮
 
 ## 📥 Installation 安装方法
@@ -71,16 +71,6 @@ A Chrome extension that helps you debug LeetCode problems using AI assistance.
 
 📋 **复制Prompt**：复制当前问题上下文以在DeepSeek Chat中使用
 🧠 **推理展示**：查看AI的推理过程（使用Deepseek-R1时）
-
-## ⚙️ Requirements 系统要求
-
-- 🌐 Chrome Browser 88+
-- 🔌 Active internet connection
-- 👤 LeetCode account
-
-- 🌐 Chrome浏览器 88+版本
-- 🔌 活跃的网络连接
-- 👤 LeetCode账号
 
 ## ⚠️ Note 注意事项
 
