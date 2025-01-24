@@ -25,9 +25,16 @@ ${content.description}
 用户代码：
 ${content.code}
 
+当前测试用例输入：
+${content.testResult.input}
+
+测试结果：
+状态: ${content.testResult.status}
+运行时间: ${content.testResult.runtime}
+
 指令：
 1.请指出代码中可能存在的bug和改进建议
-2.先用一句话概括最突出的问题
+2.先用一句话概括问题和解决方法
 
 附加要求：
 1. 使用Markdown格式输出`
