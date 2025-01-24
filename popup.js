@@ -24,29 +24,30 @@ marked.setOptions({
 
 console.log('Popup script loaded');  // 检查脚本是否加载
 
-// 在文件顶部添加缓存相关函数
-async function saveCache(url, content) {
+// 修改缓存相关函数
+async function saveCache(url, model, content) {
     await chrome.storage.local.set({
-        [`debug_cache_${url}`]: {
+        [`debug_cache_${url}_${model}`]: {
             content: content,
             timestamp: Date.now()
         }
     });
 }
 
-async function loadCache(url) {
-    const data = await chrome.storage.local.get(`debug_cache_${url}`);
-    return data[`debug_cache_${url}`];
+async function loadCache(url, model) {
+    const data = await chrome.storage.local.get(`debug_cache_${url}_${model}`);
+    return data[`debug_cache_${url}_${model}`];
 }
 
 // 修改 DOMContentLoaded 事件处理
 document.addEventListener('DOMContentLoaded', async () => {
-    // 获取当前标签页URL
+    // 获取当前标签页URL和选择的模型
     const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
     const url = tab.url;
+    const selectedModel = document.getElementById('modelSelect').value;
     
     // 检查缓存
-    const cache = await loadCache(url);
+    const cache = await loadCache(url, selectedModel);
     if (cache) {
         const resultDiv = document.getElementById('debugResult');
         resultDiv.innerHTML = marked.parse(cache.content);
@@ -55,8 +56,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    chrome.runtime.onMessage.addListener((message) => {
-        console.log('DOMContentLoaded收到消息:', message);
+    // 添加模型选择变化的监听器
+    document.getElementById('modelSelect').addEventListener('change', async (event) => {
+        const newModel = event.target.value;
+        const cache = await loadCache(url, newModel);
+        const resultDiv = document.getElementById('debugResult');
+        
+        if (cache) {
+            resultDiv.innerHTML = marked.parse(cache.content);
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        } else {
+            resultDiv.innerHTML = ''; // 清空结果
+        }
     });
 });
 
@@ -100,8 +113,20 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
-            contentBuffer = '';
-            reasoningBuffer = '';
+            
+            // 修改：先保存缓存，再清空buffer
+            chrome.tabs.query({active: true, currentWindow: true})
+                .then(([tab]) => {
+                    console.log('Content length to cache:', contentBuffer.length);
+                    return saveCache(tab.url, selectedModel, contentBuffer);
+                })
+                .then(() => {
+                    console.log('Cache saved successfully');
+                    // 移到这里：保存后再清空
+                    contentBuffer = '';
+                    reasoningBuffer = '';
+                })
+                .catch(err => console.error('Failed to save cache:', err));
         }
     };
 
