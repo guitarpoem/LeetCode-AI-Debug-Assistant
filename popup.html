@@ -180,7 +180,13 @@
   </style>
 </head>
 <body>
-  <button id="debugBtn" class="button">Debug当前代码</button>
+  <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+    <button id="debugBtn" class="button">Debug当前代码</button>
+    <select id="modelSelect" class="button" style="background: #ffffff; color: #333333; border: 1px solid #e0e0e0;">
+      <option value="deepseek-chat">Deepseek-V3</option>
+      <option value="deepseek-reasoner">Deepseek-R1</option>
+    </select>
+  </div>
   <div id="debugResult"></div>
   <script src="popup.js"></script>
 </body>

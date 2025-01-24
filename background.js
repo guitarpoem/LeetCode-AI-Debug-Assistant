@@ -4,16 +4,17 @@ console.log('Background script loaded');
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Message received in background:', request);
+    console.log('model used:', request.model);
     if (request.action === "debugCode") {
         console.log("debugCode in background.js");
-        debugCode(request.content)
+        debugCode(request.content, request.model)
             .then(result => sendResponse({result}))
             .catch(error => sendResponse({error: error.message}));
         return true; // 保持消息通道开放
     }
 });
 
-async function debugCode(content) {
+async function debugCode(content, model) {
     const prompt = `
 请帮我检查以下LeetCode代码中的问题：
 
@@ -49,7 +50,7 @@ ${content.code}
                         content: prompt
                     }
                 ],
-                model: "deepseek-chat",
+                model: model,
                 temperature: 0.7,
                 stream: true // 启用流式响应
             })

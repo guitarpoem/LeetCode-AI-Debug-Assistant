@@ -5,8 +5,10 @@ from openai import OpenAI
 API_KEY = "sk-291566e416f24f6e8d81ef1bf3ff5a9a"
 client = OpenAI(api_key=API_KEY, base_url="https://api.deepseek.com")
 
+# model = "deepseek-reasoner"
+model = "deepseek-chat"
 response = client.chat.completions.create(
-    model="deepseek-chat",
+    model= model,
     messages=[
         {"role": "system", "content": "You are a helpful assistant"},
         {"role": "user", "content": "解释为什么：生鱼片是死鱼片"},

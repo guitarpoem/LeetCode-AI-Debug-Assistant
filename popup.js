@@ -66,6 +66,9 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
     resultDiv.innerHTML = "<em>正在分析代码...</em>"; // 改为使用HTML
     let buffer = ''; // 新增缓冲区
     
+    // 获取选择的模型并转换为实际的API参数名
+    const selectedModel = document.getElementById('modelSelect').value;
+    
     // 消息监听器
     const messageListener = (message) => {
         if (message.type === 'streamContent') {
@@ -99,10 +102,11 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
         const content = await chrome.tabs.sendMessage(tab.id, {action: "getContent"});
         console.log(content);
 
-        // 发送到background script处理
+        // 发送到background script处理，使用转换后的model参数
         await chrome.runtime.sendMessage({
             action: "debugCode",
-            content: content
+            content: content,
+            model: selectedModel
         });
 
     } catch (error) {
