@@ -71,6 +71,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             resultDiv.innerHTML = ''; // 清空结果
         }
     });
+
+    // 添加复制Prompt按钮的事件监听器
+    document.getElementById('copyPromptBtn').addEventListener('click', async () => {
+        try {
+            // 获取当前标签页
+            const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+            
+            // 从页面获取内容
+            const content = await chrome.tabs.sendMessage(tab.id, {action: "getContent"});
+            
+            // 构造prompt
+            const prompt = `请帮我检查以下LeetCode代码中的问题：
+
+题目描述：
+${content.description}
+
+用户代码：
+${content.code}
+
+指令：
+1.请指出代码中可能存在的bug和改进建议
+2.先用一句话概括最突出的问题
+
+附加要求：
+1. 使用Markdown格式输出`;
+
+            // 复制到剪贴板
+            await navigator.clipboard.writeText(prompt);
+            
+            // 打开DeepSeek Chat
+            window.open('https://chat.deepseek.com/', '_blank');
+            
+        } catch (error) {
+            console.error('复制Prompt失败:', error);
+        }
+    });
 });
 
 document.getElementById('debugBtn').addEventListener('click', async () => {
