@@ -61,10 +61,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 document.getElementById('debugBtn').addEventListener('click', async () => {
-    console.log('Button clicked');   // 检查按钮点击事件
+    console.log('Button clicked');
     const resultDiv = document.getElementById('debugResult');
-    resultDiv.innerHTML = "<em>正在分析代码...</em>"; // 改为使用HTML
-    let buffer = ''; // 新增缓冲区
+    const reasoningDiv = document.getElementById('reasoningResult');
+    const reasoningContent = document.getElementById('reasoningContent');
+    
+    resultDiv.innerHTML = "<em>正在分析代码...</em>";
+    reasoningDiv.style.display = 'none';
+    reasoningContent.textContent = '';
+    
+    let contentBuffer = '';
+    let reasoningBuffer = '';
     
     // 获取选择的模型并转换为实际的API参数名
     const selectedModel = document.getElementById('modelSelect').value;
@@ -72,21 +79,29 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
     // 消息监听器
     const messageListener = (message) => {
         if (message.type === 'streamContent') {
-            buffer += message.content;
-            // 渲染并应用高亮
-            resultDiv.innerHTML = marked.parse(buffer);
-            document.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
+            if (message.isReasoning) {
+                // 处理推理内容
+                reasoningBuffer += message.content;
+                reasoningDiv.style.display = 'block';
+                reasoningContent.textContent = reasoningBuffer;
+            } else {
+                // 处理普通内容
+                contentBuffer += message.content;
+                resultDiv.innerHTML = marked.parse(contentBuffer);
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
             // 自动滚动到底部
             resultDiv.scrollTop = resultDiv.scrollHeight;
         } else if (message.type === 'streamComplete') {
             // 最终渲染一次确保完整性
-            resultDiv.innerHTML = marked.parse(buffer);
+            resultDiv.innerHTML = marked.parse(contentBuffer);
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
-            buffer = '';
+            contentBuffer = '';
+            reasoningBuffer = '';
         }
     };
 

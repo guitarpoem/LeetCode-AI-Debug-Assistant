@@ -15,8 +15,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function debugCode(content, model) {
-    const prompt = `
-请帮我检查以下LeetCode代码中的问题：
+    const messages = [{
+        role: "user",
+        content: `请帮我检查以下LeetCode代码中的问题：
 
 题目描述：
 ${content.description}
@@ -29,8 +30,8 @@ ${content.code}
 2.先用一句话概括最突出的问题
 
 附加要求：
-1. 使用Markdown格式输出
-`;
+1. 使用Markdown格式输出`
+    }];
 
     try {
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -40,19 +41,10 @@ ${content.code}
                 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
             },
             body: JSON.stringify({
-                messages: [
-                    { 
-                        role: "system", 
-                        content: "You are a helpful programming assistant specialized in debugging code."
-                    },
-                    {
-                        role: "user",
-                        content: prompt
-                    }
-                ],
+                messages: messages,
                 model: model,
                 temperature: 0.7,
-                stream: true // 启用流式响应
+                stream: true
             })
         });
 
@@ -64,16 +56,16 @@ ${content.code}
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let reasoningContent = '';
+        let content = '';
 
         while (true) {
             const {value, done} = await reader.read();
             if (done) break;
             
             buffer += decoder.decode(value, {stream: true});
-            
-            // 解析SSE数据
-            const lines = buffer.split('\n'); // 将buffer按换行符分割
-            buffer = lines.pop() || ''; 
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
             
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
@@ -82,19 +74,24 @@ ${content.code}
                     
                     try {
                         const json = JSON.parse(data);
-                        const content = json.choices[0]?.delta?.content || '';
-                        if (content) {
-                            console.log('准备发送内容:', content);  // 检查发送的内容
+                        const delta = json.choices[0]?.delta;
+                        
+                        // Handle both reasoning_content and regular content
+                        if (delta.reasoning_content) {
+                            reasoningContent += delta.reasoning_content;
+                            // Optionally send reasoning content to popup
                             chrome.runtime.sendMessage({
                                 type: 'streamContent',
-                                content
-                            }, () => {
-                                // 添加回调检查发送是否成功
-                                if (chrome.runtime.lastError) {
-                                    console.error('发送失败:', chrome.runtime.lastError);
-                                } else {
-                                    console.log('发送成功');
-                                }
+                                content: delta.reasoning_content,
+                                isReasoning: true // 标记为推理内容
+                                
+                            });
+                        }
+                        if (delta.content) {
+                            content += delta.content;
+                            chrome.runtime.sendMessage({
+                                type: 'streamContent',
+                                content: delta.content
                             });
                         }
                     } catch (e) {
@@ -104,7 +101,7 @@ ${content.code}
             }
         }
         
-        // 发送完成信号
+        // Send complete signal
         chrome.runtime.sendMessage({
             type: 'streamComplete'
         });
