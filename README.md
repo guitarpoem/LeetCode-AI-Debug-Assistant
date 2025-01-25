@@ -30,6 +30,13 @@ A Chrome extension that helps you debug LeetCode problems using AI assistance.
 3. 启用"开发者模式"
 4. 点击"加载已解压的扩展程序"并选择扩展程序文件夹
 
+## 📁 File Structure 文件结构
+
+- `content.js`: Page content extraction / 页面内容抓取
+- `background.js`: AI service communication / AI服务通信 
+- `popup.html`: UI interface / 界面展示
+- `popup.js`: Interaction logic / 交互逻辑
+
 ## ✨ Features 功能特点
 
 🔍 **Real-time Code Analysis** 
