@@ -128,6 +128,8 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
     
     let contentBuffer = '';
     let reasoningBuffer = '';
+    let lastCacheTime = 0;  // 添加最后缓存时间记录
+    const CACHE_INTERVAL = 200;  // 缓存间隔时间（毫秒）
     
     // 获取选择的模型并转换为实际的API参数名
     const selectedModel = document.getElementById('modelSelect').value;
@@ -147,29 +149,34 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
                 document.querySelectorAll('pre code').forEach((block) => {
                     hljs.highlightElement(block);
                 });
+
+                // 检查是否需要缓存
+                const currentTime = Date.now();
+                if (currentTime - lastCacheTime >= CACHE_INTERVAL) {
+                    chrome.tabs.query({active: true, currentWindow: true})
+                        .then(([tab]) => saveCache(tab.url, selectedModel, contentBuffer))
+                        .catch(err => console.error('Failed to save intermediate cache:', err));
+                    lastCacheTime = currentTime;
+                }
             }
             // 自动滚动到底部
             resultDiv.scrollTop = resultDiv.scrollHeight;
         } else if (message.type === 'streamComplete') {
-            // 最终渲染一次确保完整性
+            // 最终渲染
             resultDiv.innerHTML = marked.parse(contentBuffer);
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
             
-            // 修改：先保存缓存，再清空buffer
+            // 最后一次缓存保存
             chrome.tabs.query({active: true, currentWindow: true})
-                .then(([tab]) => {
-                    console.log('Content length to cache:', contentBuffer.length);
-                    return saveCache(tab.url, selectedModel, contentBuffer);
-                })
+                .then(([tab]) => saveCache(tab.url, selectedModel, contentBuffer))
                 .then(() => {
-                    console.log('Cache saved successfully');
-                    // 移到这里：保存后再清空
+                    console.log('Final cache saved successfully');
                     contentBuffer = '';
                     reasoningBuffer = '';
                 })
-                .catch(err => console.error('Failed to save cache:', err));
+                .catch(err => console.error('Failed to save final cache:', err));
         }
     };
 
