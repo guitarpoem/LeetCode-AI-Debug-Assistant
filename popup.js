@@ -122,19 +122,18 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
     const reasoningDiv = document.getElementById('reasoningResult');
     const reasoningContent = document.getElementById('reasoningContent');
     
-    resultDiv.innerHTML = "<em>正在分析代码...</em>";
+    resultDiv.innerHTML = "<em>正在等待页面加载...</em>";
     reasoningDiv.style.display = 'none';
     reasoningContent.textContent = '';
     
     let contentBuffer = '';
     let reasoningBuffer = '';
-    let lastCacheTime = 0;  // 添加最后缓存时间记录
-    const CACHE_INTERVAL = 200;  // 缓存间隔时间（毫秒）
+    let lastCacheTime = 0;
+    const CACHE_INTERVAL = 200;
     
-    // 获取选择的模型并转换为实际的API参数名
     const selectedModel = document.getElementById('modelSelect').value;
     
-    // 消息监听器
+    // 消息监听器设置
     const messageListener = (message) => {
         if (message.type === 'streamContent') {
             if (message.isReasoning) {
@@ -188,11 +187,27 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
         // 获取当前标签页
         const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
         
+        // 注入并执行内容脚本，确保DOM加载完成
+        await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: () => {
+                return new Promise((resolve) => {
+                    if (document.readyState === 'complete') {
+                        resolve();
+                    } else {
+                        window.addEventListener('load', resolve);
+                    }
+                });
+            }
+        });
+
+        resultDiv.innerHTML = "<em>正在分析代码...</em>";
+        
         // 从页面获取内容
         const content = await chrome.tabs.sendMessage(tab.id, {action: "getContent"});
         console.log(content);
 
-        // 发送到background script处理，使用转换后的model参数
+        // 发送到background script处理
         await chrome.runtime.sendMessage({
             action: "debugCode",
             content: content,
@@ -201,6 +216,7 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
 
     } catch (error) {
         resultDiv.textContent = "错误: " + error.message;
+        console.error('Debug error:', error);
     }
 });
 // 确保在 DOMContentLoaded 事件后注册监听器
