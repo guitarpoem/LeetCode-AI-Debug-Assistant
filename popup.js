@@ -25,10 +25,11 @@ marked.setOptions({
 console.log('Popup script loaded');  // 检查脚本是否加载
 
 // 修改缓存相关函数
-async function saveCache(url, model, content) {
+async function saveCache(url, model, data) {
     await chrome.storage.local.set({
         [`debug_cache_${url}_${model}`]: {
-            content: content,
+            content: data.content,
+            reasoning: data.reasoning,
             timestamp: Date.now()
         }
     });
@@ -50,25 +51,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cache = await loadCache(url, selectedModel);
     if (cache) {
         const resultDiv = document.getElementById('debugResult');
+        const reasoningDiv = document.getElementById('reasoningResult');
+        const reasoningContent = document.getElementById('reasoningContent');
+        
         resultDiv.innerHTML = marked.parse(cache.content);
         document.querySelectorAll('pre code').forEach((block) => {
             hljs.highlightElement(block);
         });
+
+        // 如果是 deepseek-reasoner 模型且有推理缓存，显示推理内容
+        if (selectedModel === 'deepseek-reasoner' && cache.reasoning) {
+            reasoningDiv.style.display = 'block';
+            reasoningContent.textContent = cache.reasoning;
+        }
     }
 
-    // 添加模型选择变化的监听器
+    // 修改模型选择变化的监听器
     document.getElementById('modelSelect').addEventListener('change', async (event) => {
         const newModel = event.target.value;
-        const cache = await loadCache(url, newModel);
         const resultDiv = document.getElementById('debugResult');
+        const reasoningDiv = document.getElementById('reasoningResult');
+        const reasoningContent = document.getElementById('reasoningContent');
         
+        // 先清空所有内容
+        resultDiv.innerHTML = '';
+        reasoningDiv.style.display = 'none';
+        reasoningContent.textContent = '';
+        
+        // 然后检查并加载缓存
+        const cache = await loadCache(url, newModel);
         if (cache) {
             resultDiv.innerHTML = marked.parse(cache.content);
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
-        } else {
-            resultDiv.innerHTML = ''; // 清空结果
+
+            // 如果是 deepseek-reasoner 模型且有推理缓存，显示推理内容
+            if (newModel === 'deepseek-reasoner' && cache.reasoning) {
+                reasoningDiv.style.display = 'block';
+                reasoningContent.textContent = cache.reasoning;
+            }
         }
     });
 
@@ -153,7 +175,10 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
                 const currentTime = Date.now();
                 if (currentTime - lastCacheTime >= CACHE_INTERVAL) {
                     chrome.tabs.query({active: true, currentWindow: true})
-                        .then(([tab]) => saveCache(tab.url, selectedModel, contentBuffer))
+                        .then(([tab]) => saveCache(tab.url, selectedModel, {
+                            content: contentBuffer,
+                            reasoning: reasoningBuffer
+                        }))
                         .catch(err => console.error('Failed to save intermediate cache:', err));
                     lastCacheTime = currentTime;
                 }
@@ -169,7 +194,10 @@ document.getElementById('debugBtn').addEventListener('click', async () => {
             
             // 最后一次缓存保存
             chrome.tabs.query({active: true, currentWindow: true})
-                .then(([tab]) => saveCache(tab.url, selectedModel, contentBuffer))
+                .then(([tab]) => saveCache(tab.url, selectedModel, {
+                    content: contentBuffer,
+                    reasoning: reasoningBuffer
+                }))
                 .then(() => {
                     console.log('Final cache saved successfully');
                     contentBuffer = '';
