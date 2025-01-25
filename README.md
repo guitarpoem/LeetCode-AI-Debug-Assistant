@@ -25,7 +25,7 @@ A Chrome extension that helps you debug LeetCode problems using AI assistance.
 3. Enable "Developer mode"
 4. Click "Load unpacked" and select the extension folder
 
-1. 下载扩展程序文件
+1. 下载扩展程序文件 
 2. 打开Chrome浏览器，访问 `chrome://extensions/`
 3. 启用"开发者模式"
 4. 点击"加载已解压的扩展程序"并选择扩展程序文件夹
