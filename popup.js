@@ -136,6 +136,37 @@ ${content.testResult.input}
             console.error('复制Prompt失败:', error);
         }
     });
+
+    // 添加复制题解Prompt按钮的事件监听器
+    document.getElementById('copySolutionPromptBtn').addEventListener('click', async () => {
+        try {
+            // 获取当前标签页
+            const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+            
+            // 从页面获取内容
+            const content = await chrome.tabs.sendMessage(tab.id, {action: "getContent"});
+            
+            // 构造题解prompt
+            const prompt = `请给出这道LeetCode题目的题解：
+
+题目描述：
+${content.description}
+
+请提供：
+1. 解题思路分析
+2. 最优解代码实现
+3. 时间复杂度和空间复杂度分析`;
+
+            // 复制到剪贴板
+            await navigator.clipboard.writeText(prompt);
+            
+            // 打开DeepSeek Chat
+            window.open('https://chat.deepseek.com/', '_blank');
+            
+        } catch (error) {
+            console.error('复制题解Prompt失败:', error);
+        }
+    });
 });
 
 document.getElementById('debugBtn').addEventListener('click', async () => {
