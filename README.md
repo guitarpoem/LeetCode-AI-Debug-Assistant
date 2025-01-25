@@ -4,7 +4,7 @@ A Chrome extension that helps you debug LeetCode problems using AI assistance.
 
 一个使用AI辅助调试LeetCode问题的Chrome扩展程序。
 
-![Extension Screenshot](./images/pic1.jpg)
+<img src="./images/pic1.jpg" width="300" alt="Extension Screenshot">
 
 ## 🎯 Usage 使用方法
 
