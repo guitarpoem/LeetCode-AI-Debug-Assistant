@@ -167,6 +167,28 @@ ${content.description}
             console.error('复制题解Prompt失败:', error);
         }
     });
+
+    // 添加语言切换按钮的事件监听器
+    const langToggleBtn = document.getElementById('langToggleBtn');
+    const debugBtn = document.getElementById('debugBtn');
+    const copyPromptBtn = document.getElementById('copyPromptBtn');
+    const copySolutionPromptBtn = document.getElementById('copySolutionPromptBtn');
+    
+    let isEnglish = false;
+    
+    langToggleBtn.addEventListener('click', () => {
+        isEnglish = !isEnglish;
+        
+        // 不再改变图标按钮的文字
+        // 只切换其他按钮的文字
+        if (isEnglish) {
+            copyPromptBtn.textContent = 'Prompt';
+            copySolutionPromptBtn.textContent = 'Solution';
+        } else {
+            copyPromptBtn.textContent = '提示词';
+            copySolutionPromptBtn.textContent = '看题解';
+        }
+    });
 });
 
 document.getElementById('debugBtn').addEventListener('click', async () => {
