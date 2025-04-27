@@ -42,6 +42,48 @@ async function loadCache(url, model) {
 
 // 修改 DOMContentLoaded 事件处理
 document.addEventListener('DOMContentLoaded', async () => {
+    // Check for API key
+    const apiKeyForm = document.getElementById('apiKeyForm');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const debugBtn = document.getElementById('debugBtn');
+    const modelSelect = document.getElementById('modelSelect');
+    const copyPromptBtn = document.getElementById('copyPromptBtn');
+    const copySolutionPromptBtn = document.getElementById('copySolutionPromptBtn');
+
+    // Get stored API key
+    const { deepseekApiKey } = await chrome.storage.local.get('deepseekApiKey');
+    
+    if (!deepseekApiKey) {
+        // Show API key form and hide other elements
+        apiKeyForm.style.display = 'block';
+        debugBtn.style.display = 'none';
+        modelSelect.style.display = 'none';
+        copyPromptBtn.style.display = 'none';
+        copySolutionPromptBtn.style.display = 'none';
+    } else {
+        // Hide API key form and show other elements
+        apiKeyForm.style.display = 'none';
+        debugBtn.style.display = 'block';
+        modelSelect.style.display = 'block';
+        copyPromptBtn.style.display = 'block';
+        copySolutionPromptBtn.style.display = 'block';
+    }
+
+    // Handle API key save
+    saveApiKeyBtn.addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (apiKey) {
+            await chrome.storage.local.set({ deepseekApiKey: apiKey });
+            // Hide form and show other elements
+            apiKeyForm.style.display = 'none';
+            debugBtn.style.display = 'block';
+            modelSelect.style.display = 'block';
+            copyPromptBtn.style.display = 'block';
+            copySolutionPromptBtn.style.display = 'block';
+        }
+    });
+
     // 获取当前标签页URL和选择的模型
     const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
     const url = tab.url;
@@ -165,28 +207,6 @@ ${content.description}
             
         } catch (error) {
             console.error('复制题解Prompt失败:', error);
-        }
-    });
-
-    // 添加语言切换按钮的事件监听器
-    const langToggleBtn = document.getElementById('langToggleBtn');
-    const debugBtn = document.getElementById('debugBtn');
-    const copyPromptBtn = document.getElementById('copyPromptBtn');
-    const copySolutionPromptBtn = document.getElementById('copySolutionPromptBtn');
-    
-    let isEnglish = false;
-    
-    langToggleBtn.addEventListener('click', () => {
-        isEnglish = !isEnglish;
-        
-        // 不再改变图标按钮的文字
-        // 只切换其他按钮的文字
-        if (isEnglish) {
-            copyPromptBtn.textContent = 'Prompt';
-            copySolutionPromptBtn.textContent = 'Solution';
-        } else {
-            copyPromptBtn.textContent = '提示词';
-            copySolutionPromptBtn.textContent = '看题解';
         }
     });
 });

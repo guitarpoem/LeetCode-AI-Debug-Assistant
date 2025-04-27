@@ -223,47 +223,22 @@
       padding: 4px 4px;   /* 为下拉框设置更小的内边距 */
       text-align: center;  /* 文字居中 */
     }
-
-    /* 更新语言切换按钮样式 */
-    .lang-toggle {
-        flex: 0.2;          /* 减小弹性比例 */
-        min-width: 24px;    /* 减小最小宽度 */
-        width: 24px;        /* 固定宽度 */
-        height: 24px;       /* 固定高度 */
-        padding: 2px;       /* 减小内边距 */
-        background: #f0f0f0;/* 更柔和的背景色 */
-        font-size: 14px;    /* 调整图标大小 */
-        display: flex;      /* 使用flex布局 */
-        align-items: center;/* 垂直居中 */
-        justify-content: center; /* 水平居中 */
-        border-radius: 4px; /* 圆角 */
-        margin-left: 2px;   /* 左边距 */
-    }
-    
-    .lang-toggle:hover {
-        background: #e0e0e0;
-    }
-    
-    /* 调整其他按钮的弹性比例 */
-    #copyPromptBtn {
-        flex: 0.7;    /* 增加一点空间 */
-    }
-    
-    #copySolutionPromptBtn {
-        flex: 0.7;    /* 增加一点空间 */
-    }
   </style>
 </head>
 <body>
+  <div id="apiKeyForm" style="display: none; margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 6px; border-left: 4px solid #1a73e8;">
+    <h4 style="margin: 0 0 8px 0; color: #1a73e8;">DeepSeek API Key</h4>
+    <input type="password" id="apiKeyInput" placeholder="Enter your DeepSeek API key" style="width: 100%; padding: 6px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 8px;">
+    <button id="saveApiKeyBtn" class="button" style="background: #2196F3;">Save API Key</button>
+  </div>
   <div style="display: flex; gap: 10px; margin-bottom: 15px;">
     <button id="debugBtn" class="button">Debug</button>
     <select id="modelSelect" class="button" style="background: #ffffff; color: #333333; border: 1px solid #e0e0e0;">
       <option value="deepseek-chat">Deepseek-V3</option>
       <option value="deepseek-reasoner">Deepseek-R1</option>
     </select>
-    <button id="copyPromptBtn" class="button" style="background: #2196F3;">提示词</button>
+    <button id="copyPromptBtn" class="button" style="background: #2196F3;">复制提示词</button>
     <button id="copySolutionPromptBtn" class="button" style="background: #9C27B0;">看题解</button>
-    <button id="langToggleBtn" class="button lang-toggle">🌐</button>
   </div>
   <div id="reasoningResult" style="display: none; margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 6px; border-left: 4px solid #1a73e8;">
     <h4 style="margin: 0 0 8px 0; color: #1a73e8;">推理过程</h4>

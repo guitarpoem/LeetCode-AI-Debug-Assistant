@@ -1,4 +1,4 @@
-const DEEPSEEK_API_KEY = 'sk-291566e416f24f6e8d81ef1bf3ff5a9a'; // 您的DeepSeek API密钥
+const DEEPSEEK_API_KEY = ''; // 您的DeepSeek API密钥
 
 console.log('Background script loaded');
 
@@ -15,6 +15,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function debugCode(content, model) {
+    // Get the API key from storage
+    const { deepseekApiKey } = await chrome.storage.local.get('deepseekApiKey');
+    if (!deepseekApiKey) {
+        throw new Error('DeepSeek API key not found. Please set your API key in the extension popup.');
+    }
+
     const messages = [{
         role: "user",
         content: `请帮我检查以下LeetCode代码中的问题：
@@ -45,7 +51,7 @@ ${content.testResult.input}
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+                'Authorization': `Bearer ${deepseekApiKey}`
             },
             body: JSON.stringify({
                 messages: messages,
