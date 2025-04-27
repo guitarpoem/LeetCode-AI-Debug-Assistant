@@ -42,6 +42,48 @@ async function loadCache(url, model) {
 
 // 修改 DOMContentLoaded 事件处理
 document.addEventListener('DOMContentLoaded', async () => {
+    // Check for API key
+    const apiKeyForm = document.getElementById('apiKeyForm');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const debugBtn = document.getElementById('debugBtn');
+    const modelSelect = document.getElementById('modelSelect');
+    const copyPromptBtn = document.getElementById('copyPromptBtn');
+    const copySolutionPromptBtn = document.getElementById('copySolutionPromptBtn');
+
+    // Get stored API key
+    const { deepseekApiKey } = await chrome.storage.local.get('deepseekApiKey');
+    
+    if (!deepseekApiKey) {
+        // Show API key form and hide other elements
+        apiKeyForm.style.display = 'block';
+        debugBtn.style.display = 'none';
+        modelSelect.style.display = 'none';
+        copyPromptBtn.style.display = 'none';
+        copySolutionPromptBtn.style.display = 'none';
+    } else {
+        // Hide API key form and show other elements
+        apiKeyForm.style.display = 'none';
+        debugBtn.style.display = 'block';
+        modelSelect.style.display = 'block';
+        copyPromptBtn.style.display = 'block';
+        copySolutionPromptBtn.style.display = 'block';
+    }
+
+    // Handle API key save
+    saveApiKeyBtn.addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (apiKey) {
+            await chrome.storage.local.set({ deepseekApiKey: apiKey });
+            // Hide form and show other elements
+            apiKeyForm.style.display = 'none';
+            debugBtn.style.display = 'block';
+            modelSelect.style.display = 'block';
+            copyPromptBtn.style.display = 'block';
+            copySolutionPromptBtn.style.display = 'block';
+        }
+    });
+
     // 获取当前标签页URL和选择的模型
     const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
     const url = tab.url;
